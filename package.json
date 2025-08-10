@@ -1,6 +1,6 @@
 {
   "name": "vacom-trial-form",
-  "homepage": "https://daint-vacom.github.io/VacomTrialForm/",
+  "homepage": "https://daint-vacom.github.io/VacomTrialForm",
   "private": true,
   "version": "9.2.3",
   "type": "module",
@@ -13,7 +13,7 @@
     "create-demo-user": "tsx scripts/create-demo-user.js",
     "debug-auth": "tsx scripts/debug-auth.js",
     "predeploy": "npm run build",
-    "deploy": "vite build && gh-pages -d dist"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^2.2.0",
@@ -88,6 +88,7 @@
     "eslint-plugin-prettier": "^5.5.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "gh-pages": "^6.3.0",
     "globals": "^16.2.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.1",
