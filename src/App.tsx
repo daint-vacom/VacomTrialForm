@@ -8,7 +8,7 @@ export function App() {
       <style>
         {`
           html, body {
-            background-image: url('${toAbsoluteUrl('/media/sub.jpg')}');
+            background-image: url('${toAbsoluteUrl('/media/background.jpg')}');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
