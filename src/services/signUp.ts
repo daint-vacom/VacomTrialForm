@@ -29,8 +29,6 @@ export const signUpApi = async (customerData: {
   content: string;
 }) => {
   const token = getTokenApi();
-  console.log('TOKEN', token);
-  console.log('CUSTOMER DATA', customerData);
   return serverApiAxios.post(
     '/api/app/business-customer/register',
     customerData,
