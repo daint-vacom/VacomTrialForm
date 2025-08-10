@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { signUpApi } from '@/services/signUp';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -51,7 +52,7 @@ const options = [
   },
 ];
 
-export const getSigninSchema = () => {
+export const getSignUpSchema = () => {
   return z.object({
     products: z.array(z.string(), {
       message: 'Vui lòng chọn ít nhất 1 sản phẩm',
@@ -69,13 +70,11 @@ export const getSigninSchema = () => {
   });
 };
 
-export type SigninSchemaType = z.infer<ReturnType<typeof getSigninSchema>>;
+export type SignUpSchemaType = z.infer<ReturnType<typeof getSignUpSchema>>;
 
-export function TrialSignUpForm() {
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const form = useForm<SigninSchemaType>({
-    resolver: zodResolver(getSigninSchema()),
+export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
+  const form = useForm<SignUpSchemaType>({
+    resolver: zodResolver(getSignUpSchema()),
     defaultValues: {
       businessType: 'enterprise',
       tax: '',
@@ -87,14 +86,27 @@ export function TrialSignUpForm() {
     },
   });
 
-  async function onSubmit(values: SigninSchemaType) {
-    try {
-      setIsProcessing(true);
-    } catch (err) {
-      console.error('Unexpectederror:', err);
-    } finally {
-      setIsProcessing(false);
-    }
+  const { mutate: signUp, status: signUpStatus } = useMutation({
+    mutationFn: signUpApi,
+    onSuccess: () => {
+      console.log('Mutation Success'); // Log success
+      onSuccess();
+    },
+    onError: (error) => {
+      console.error('Mutation Error:', error); // Log error
+    },
+  });
+
+  async function onSubmit(values: SignUpSchemaType) {
+    signUp({
+      taxCode: values.tax,
+      contact: values.business,
+      customerName: values.fullName,
+      tel: values.phone,
+      address: '',
+      email: values.email,
+      content: `Quan tâm phần mềm: ${values.products.join(', ')}\n${values.note}`,
+    });
   }
 
   return (
@@ -274,9 +286,9 @@ export function TrialSignUpForm() {
           type="submit"
           size={'lg'}
           className="w-full"
-          disabled={isProcessing}
+          disabled={signUpStatus === 'pending'}
         >
-          {isProcessing ? (
+          {signUpStatus === 'pending' ? (
             <span className="flex items-center gap-2">
               <LoaderCircleIcon className="h-4 w-4 animate-spin" /> ĐANG XỬ LÝ
             </span>

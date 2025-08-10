@@ -5,9 +5,3 @@ const serverApiAxios = axios.create({
 });
 
 export default serverApiAxios;
-
-const tempServerAxios = axios.create({
-  baseURL: 'https://script-delight-informative-beatles.trycloudflare.com',
-});
-
-export { tempServerAxios };
