@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { LoaderCircleIcon } from 'lucide-react';
+import { AlertCircle, LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { signUpApi } from '@/services/signUp';
+import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -61,7 +63,15 @@ export const getSignUpSchema = () => {
     tax: z.string().min(1, { message: 'Không được để trống.' }),
     business: z.string().min(1, { message: 'Không được để trống.' }),
     fullName: z.string().min(1, { message: 'Không được để trống.' }),
-    phone: z.string().min(1, { message: 'Không được để trống.' }),
+    phone: z
+      .string()
+      .min(1, { message: 'Không được để trống.' })
+      .regex(
+        new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/),
+        {
+          message: 'Số điện thoại không hợp lệ.',
+        },
+      ),
     email: z
       .string()
       .min(1, { message: 'Không được để trống.' })
@@ -73,6 +83,8 @@ export const getSignUpSchema = () => {
 export type SignUpSchemaType = z.infer<ReturnType<typeof getSignUpSchema>>;
 
 export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<SignUpSchemaType>({
     resolver: zodResolver(getSignUpSchema()),
     defaultValues: {
@@ -90,10 +102,12 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
     mutationFn: signUpApi,
     onSuccess: () => {
       console.log('Mutation Success'); // Log success
+      setError(null);
       onSuccess();
     },
     onError: (error) => {
       console.error('Mutation Error:', error); // Log error
+      setError('Đã có lỗi xảy ra. Vui lòng thử lại!');
     },
   });
 
@@ -281,6 +295,19 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
             )}
           />
         </div>
+
+        {error && (
+          <Alert
+            variant="destructive"
+            appearance="light"
+            onClose={() => setError(null)}
+          >
+            <AlertIcon>
+              <AlertCircle />
+            </AlertIcon>
+            <AlertTitle>{error}</AlertTitle>
+          </Alert>
+        )}
 
         <Button
           type="submit"
