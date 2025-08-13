@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { AlertCircle, LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { signUpApi } from '@/services/signUp';
+import { getProvinces } from '@/services/utils';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,38 +20,95 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 const options = [
   {
-    value: 'vacom-online',
-    label: 'Vacom Online',
-    fullLabel: 'Phần mềm kế toán Vacom Online',
+    heading: 'Phần mềm kế toán online VACOM',
+    options: [
+      {
+        value: 'vacom-online-dich-vu',
+        label: 'VACOM ONLINE - Dịch vụ',
+        fullLabel: 'Dịch vụ',
+      },
+      {
+        value: 'vacom-online-thuong-mai',
+        label: 'VACOM ONLINE - Thương mại',
+        fullLabel: 'Thương mại',
+      },
+      {
+        value: 'vacom-online-xl-du',
+        label: 'VACOM ONLINE - Xây lắp/ dự án',
+        fullLabel: 'Xây lắp/ dự án',
+      },
+      {
+        value: 'vacom-online-sx-gc',
+        label: 'VACOM ONLINE - Sản xuất/ gia công',
+        fullLabel: 'Sản xuất/ gia công',
+      },
+      {
+        value: 'vacom-online-tong-hop',
+        label: 'VACOM ONLINE - Tổng hợp',
+        fullLabel: 'Tổng hợp',
+      },
+    ],
   },
   {
-    value: 'm-invoice',
-    label: 'M-Invoice',
-    fullLabel: 'Phần mềm hóa đơn điện tử M-Invoice',
+    heading: 'Phần mềm kế toán, bán hàng HKD VACOM vaShop',
+    options: [
+      {
+        value: 'ban-hang',
+        label: 'Bán hàng',
+        fullLabel: 'Bán hàng trên điện thoại',
+      },
+      {
+        value: 'vacom-hkd',
+        label: 'VACOM HKD',
+        fullLabel: 'Kế toán theo TT 88/2021/TT-BTC',
+      },
+    ],
   },
   {
-    value: 'qlnstl',
-    label: 'QL Nhân Sự - Tiền Lương',
-    fullLabel: 'Phần mềm quản lý nhân sự - tiền lương',
+    heading: 'Kế toán HTX-Theo TT 71/2025/TT-BTC',
+    options: [
+      {
+        value: 'vacom-htx',
+        label: 'VACOM HTX',
+        fullLabel: 'VACOM HTX',
+      },
+    ],
   },
   {
-    value: 'qlthp',
-    label: 'QL Thu Học Phí',
-    fullLabel: 'Phần mềm quản lý thu học phí',
-  },
-  {
-    value: 'vacom-hkd',
-    label: 'Vacom HKD',
-    fullLabel: 'Phần mềm kế toán Hộ kinh doanh VACOM HKD',
-  },
-  {
-    value: 'tncn',
-    label: 'Chứng từ thuế TNCN',
-    fullLabel: 'Chứng từ thuế Thu nhập cá nhân',
+    heading: 'Phần mềm khác',
+    options: [
+      {
+        value: 'cks',
+        label: 'CKS',
+        fullLabel: 'Chữ ký số',
+      },
+      {
+        value: 'mbhxh',
+        label: 'mBHXH',
+        fullLabel: 'Bảo hiểm xã hội',
+      },
+      {
+        value: 'm-invoice',
+        label: 'M-invoice',
+        fullLabel: 'Hóa đơn điện tử M-invoice',
+      },
+      {
+        value: 'smi',
+        label: 'SMI',
+        fullLabel: 'Quản lý hóa đơn',
+      },
+    ],
   },
 ];
 
@@ -59,9 +117,9 @@ export const getSignUpSchema = () => {
     products: z.array(z.string(), {
       message: 'Vui lòng chọn ít nhất 1 sản phẩm',
     }),
-    businessType: z.string().min(1, { message: 'Không được để trống.' }),
-    tax: z.string().min(1, { message: 'Không được để trống.' }),
-    business: z.string().min(1, { message: 'Không được để trống.' }),
+    businessType: z.string().optional(),
+    tax: z.string().optional(),
+    business: z.string().optional(),
     fullName: z.string().min(1, { message: 'Không được để trống.' }),
     phone: z
       .string()
@@ -72,11 +130,9 @@ export const getSignUpSchema = () => {
           message: 'Số điện thoại không hợp lệ.',
         },
       ),
-    email: z
-      .string()
-      .min(1, { message: 'Không được để trống.' })
-      .email({ message: 'Vui lòng nhập email hợp lệ.' }),
-    note: z.string().min(1, { message: 'Không được để trống.' }),
+    email: z.string().min(1, { message: 'Không được để trống.' }),
+    address: z.string().optional(),
+    note: z.string().optional(),
   });
 };
 
@@ -94,8 +150,19 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
       fullName: '',
       phone: '',
       email: '',
+      address: '',
       note: '',
     },
+  });
+
+  const { data: provinces } = useQuery({
+    queryKey: ['positions'],
+    queryFn: async () => {
+      const response = await getProvinces();
+      return response;
+    },
+    retry: 0,
+    refetchOnWindowFocus: false,
   });
 
   const { mutate: signUp, status: signUpStatus } = useMutation({
@@ -112,6 +179,12 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
   });
 
   async function onSubmit(values: SignUpSchemaType) {
+    const params = new URLSearchParams(window.location.search);
+    const tdn = params.get('tdn');
+
+    const introducer = `Người giới thiệu: ${tdn}\n`;
+    const products = `Quan tâm phần mềm: ${values.products.join(', ')}\n`;
+
     signUp({
       taxCode: values.tax,
       contact: values.business,
@@ -119,7 +192,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
       tel: values.phone,
       address: '',
       email: values.email,
-      content: `Quan tâm phần mềm: ${values.products.join(', ')}\n${values.note}`,
+      content: introducer + products + values.note,
     });
   }
 
@@ -165,71 +238,6 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
             )}
           />
 
-          <div className="flex items-center flex-wrap lg:flex-nowrap gap-5 lg:col-span-2">
-            <Label className="flex">
-              Loại hình doanh nghiệp{' '}
-              <span className="ml-1 text-red-500">*</span>
-            </Label>
-            <div className="flex items-center gap-5">
-              <RadioGroup
-                defaultValue="enterprise"
-                className="flex items-center gap-5"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="enterprise" id="1" />
-                  <Label
-                    htmlFor="1"
-                    className="text-foreground text-sm font-normal"
-                  >
-                    Doanh nghiệp
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="household-business" id="2" />
-                  <Label
-                    htmlFor="2"
-                    className="text-foreground text-sm font-normal"
-                  >
-                    Hộ kinh doanh
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
-
-          <FormField
-            control={form.control}
-            name="tax"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Mã số thuế <span className="ml-1 text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="business"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Tên công ty / hộ kinh doanh{' '}
-                  <span className="ml-1 text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <FormField
             control={form.control}
             name="fullName"
@@ -262,6 +270,63 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
             )}
           />
 
+          <div className="flex items-center flex-wrap lg:flex-nowrap gap-5 lg:col-span-2 my-2.5">
+            <Label className="flex">Loại hình doanh nghiệp</Label>
+            <div className="flex items-center gap-5">
+              <RadioGroup
+                defaultValue="enterprise"
+                className="flex items-center gap-5"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="enterprise" id="1" />
+                  <Label
+                    htmlFor="1"
+                    className="text-foreground text-sm font-normal"
+                  >
+                    Doanh nghiệp
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="household-business" id="2" />
+                  <Label
+                    htmlFor="2"
+                    className="text-foreground text-sm font-normal"
+                  >
+                    Hộ kinh doanh
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="tax"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mã số thuế</FormLabel>
+                <FormControl>
+                  <Input placeholder="" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="business"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tên công ty / hộ kinh doanh</FormLabel>
+                <FormControl>
+                  <Input placeholder="" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="email"
@@ -272,6 +337,31 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
                 </FormLabel>
                 <FormControl>
                   <Input placeholder="" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Địa chỉ</FormLabel>
+                <FormControl>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn tỉnh thành" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {provinces?.map((pos) => (
+                        <SelectItem key={pos.code} value={pos.code.toString()}>
+                          {pos.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
