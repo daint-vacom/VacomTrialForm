@@ -172,13 +172,18 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
       setError(null);
       onSuccess();
     },
-    onError: (error) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
       console.error('Mutation Error:', error); // Log error
-      setError('Đã có lỗi xảy ra. Vui lòng thử lại!');
+      if (error.response.data.error.code === 'BusinessCustomer:409') {
+        setError('Địa chỉ email đã được sử dụng để đăng ký dùng thử!');
+      } else setError('Đã có lỗi xảy ra. Vui lòng thử lại!');
     },
   });
 
   async function onSubmit(values: SignUpSchemaType) {
+    setError(null);
+
     const params = new URLSearchParams(window.location.search);
     const tdn = params.get('tdn');
 

@@ -15,6 +15,5 @@ const api: AxiosInstance = axios.create({
 
 export const getProvinces = async (): Promise<Province[]> => {
   const res = await api.get<Province[]>('/');
-  console.log(res);
   return res.data;
 };
