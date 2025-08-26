@@ -183,16 +183,18 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
     const tdn = params.get('tdn');
 
     const introducer = `Người giới thiệu: ${tdn}\n`;
+    const type = `Loại hình doanh nghiệp: ${values.businessType}\n`;
     const products = `Quan tâm phần mềm: ${values.products.join(', ')}\n`;
+    const note = `Ghi chú: ${values.note}`;
 
     signUp({
       taxCode: values.tax,
       contact: values.business,
       customerName: values.fullName,
       tel: values.phone,
-      address: '',
+      address: values.address,
       email: values.email,
-      content: introducer + products + values.note,
+      content: introducer + type + products + note,
     });
   }
 
@@ -247,7 +249,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
                   Họ tên <span className="ml-1 text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input placeholder="Nhập họ và tên của bạn" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -263,7 +265,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
                   Số điện thoại <span className="ml-1 text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input placeholder="Nhập số điện thoại" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -274,11 +276,11 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
             <Label className="flex">Loại hình doanh nghiệp</Label>
             <div className="flex items-center gap-5">
               <RadioGroup
-                defaultValue="enterprise"
+                defaultValue="Doanh Nghiệp"
                 className="flex items-center gap-5"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="enterprise" id="1" />
+                  <RadioGroupItem value="Doanh Nghiệp" id="1" />
                   <Label
                     htmlFor="1"
                     className="text-foreground text-sm font-normal"
@@ -287,7 +289,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="household-business" id="2" />
+                  <RadioGroupItem value="Hộ Kinh Doanh" id="2" />
                   <Label
                     htmlFor="2"
                     className="text-foreground text-sm font-normal"
@@ -306,7 +308,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
               <FormItem>
                 <FormLabel>Mã số thuế</FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input placeholder="Nhập mã số thuế" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -320,7 +322,10 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
               <FormItem>
                 <FormLabel>Tên công ty / hộ kinh doanh</FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input
+                    placeholder="Nhập tên công ty / hộ kinh doanh"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -336,7 +341,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
                   Email <span className="ml-1 text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input placeholder="Nhập địa chỉ email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
