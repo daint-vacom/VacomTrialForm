@@ -361,7 +361,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
                     </SelectTrigger>
                     <SelectContent>
                       {provinces?.map((pos) => (
-                        <SelectItem key={pos.code} value={pos.code.toString()}>
+                        <SelectItem key={pos.code} value={pos.name}>
                           {pos.name}
                         </SelectItem>
                       ))}
