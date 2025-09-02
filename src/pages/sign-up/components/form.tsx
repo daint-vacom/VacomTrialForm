@@ -34,27 +34,27 @@ const options = [
     heading: 'Phần mềm kế toán online VACOM',
     options: [
       {
-        value: 'vacom-online-dich-vu',
+        value: 'VACOM ONLINE - Dịch vụ',
         label: 'VACOM ONLINE - Dịch vụ',
         fullLabel: 'Dịch vụ',
       },
       {
-        value: 'vacom-online-thuong-mai',
+        value: 'VACOM ONLINE - Thương mại',
         label: 'VACOM ONLINE - Thương mại',
         fullLabel: 'Thương mại',
       },
       {
-        value: 'vacom-online-xl-du',
+        value: 'VACOM ONLINE - Xây lắp/ dự án',
         label: 'VACOM ONLINE - Xây lắp/ dự án',
         fullLabel: 'Xây lắp/ dự án',
       },
       {
-        value: 'vacom-online-sx-gc',
+        value: 'VACOM ONLINE - Sản xuất/ gia công',
         label: 'VACOM ONLINE - Sản xuất/ gia công',
         fullLabel: 'Sản xuất/ gia công',
       },
       {
-        value: 'vacom-online-tong-hop',
+        value: 'VACOM ONLINE - Tổng hợp',
         label: 'VACOM ONLINE - Tổng hợp',
         fullLabel: 'Tổng hợp',
       },
@@ -64,12 +64,12 @@ const options = [
     heading: 'Phần mềm kế toán, bán hàng HKD VACOM vaShop',
     options: [
       {
-        value: 'ban-hang',
+        value: 'Bán hàng',
         label: 'Bán hàng',
         fullLabel: 'Bán hàng trên điện thoại',
       },
       {
-        value: 'vacom-hkd',
+        value: 'VACOM HKD',
         label: 'VACOM HKD',
         fullLabel: 'Kế toán theo TT 88/2021/TT-BTC',
       },
@@ -79,7 +79,7 @@ const options = [
     heading: 'Kế toán HTX-Theo TT 71/2025/TT-BTC',
     options: [
       {
-        value: 'vacom-htx',
+        value: 'VACOM HTX',
         label: 'VACOM HTX',
         fullLabel: 'VACOM HTX',
       },
@@ -89,22 +89,22 @@ const options = [
     heading: 'Phần mềm khác',
     options: [
       {
-        value: 'cks',
+        value: 'CKS',
         label: 'CKS',
         fullLabel: 'Chữ ký số',
       },
       {
-        value: 'mbhxh',
+        value: 'mBHXH',
         label: 'mBHXH',
         fullLabel: 'Bảo hiểm xã hội',
       },
       {
-        value: 'm-invoice',
+        value: 'M-invoice',
         label: 'M-invoice',
         fullLabel: 'Hóa đơn điện tử M-invoice',
       },
       {
-        value: 'smi',
+        value: 'SMI',
         label: 'SMI',
         fullLabel: 'Quản lý hóa đơn',
       },
@@ -144,7 +144,7 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
   const form = useForm<SignUpSchemaType>({
     resolver: zodResolver(getSignUpSchema()),
     defaultValues: {
-      businessType: 'enterprise',
+      businessType: 'Doanh Nghiệp',
       tax: '',
       business: '',
       fullName: '',
@@ -175,9 +175,10 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       console.error('Mutation Error:', error); // Log error
-      if (error.response.data.error.code === 'BusinessCustomer:409') {
-        setError('Địa chỉ email đã được sử dụng để đăng ký dùng thử!');
-      } else setError('Đã có lỗi xảy ra. Vui lòng thử lại!');
+      setError(
+        error.response.data.error.message ??
+          'Đăng ký thất bại, vui lòng thử lại!',
+      );
     },
   });
 
@@ -277,34 +278,42 @@ export function TrialSignUpForm({ onSuccess }: { onSuccess: () => void }) {
             )}
           />
 
-          <div className="flex items-center flex-wrap lg:flex-nowrap gap-5 lg:col-span-2 my-2.5">
-            <Label className="flex">Loại hình doanh nghiệp</Label>
-            <div className="flex items-center gap-5">
-              <RadioGroup
-                defaultValue="Doanh Nghiệp"
-                className="flex items-center gap-5"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Doanh Nghiệp" id="1" />
-                  <Label
-                    htmlFor="1"
-                    className="text-foreground text-sm font-normal"
+          <FormField
+            control={form.control}
+            name="businessType"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center flex-wrap lg:flex-nowrap gap-5 lg:col-span-2 my-2.5">
+                <FormLabel>Loại hình doanh nghiệp</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="flex items-center gap-5"
                   >
-                    Doanh nghiệp
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Hộ Kinh Doanh" id="2" />
-                  <Label
-                    htmlFor="2"
-                    className="text-foreground text-sm font-normal"
-                  >
-                    Hộ kinh doanh
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Doanh Nghiệp" id="1" />
+                      <Label
+                        htmlFor="1"
+                        className="text-foreground text-sm font-normal"
+                      >
+                        Doanh nghiệp
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Hộ Kinh Doanh" id="2" />
+                      <Label
+                        htmlFor="2"
+                        className="text-foreground text-sm font-normal"
+                      >
+                        Hộ kinh doanh
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
